@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   registrationFormSchema,
@@ -19,7 +19,7 @@ import { Field, inputClasses } from "../components/ui/Field";
 export function RegistrationForm() {
   const {
     register,
-    watch,
+    control,
     handleSubmit,
     setValue,
     setError,
@@ -28,7 +28,7 @@ export function RegistrationForm() {
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationFormSchema),
     defaultValues: {
-     agency_type: "real",
+      agency_type: "real",
       agent_code: "",
       first_name: "",
       last_name: "",
@@ -45,8 +45,8 @@ export function RegistrationForm() {
 
   const signupMutation = useSignup();
 
-  const agentCode = watch("agent_code");
-  const debouncedAgentCode = useDebouncedValue(agentCode, DEBOUNCE_MS);
+  const agentCode = useWatch({ control, name: "agent_code" });
+  const debouncedAgentCode = useDebouncedValue(agentCode ?? "", DEBOUNCE_MS);
   const codeCheck = useCheckAgencyCode(debouncedAgentCode);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function RegistrationForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [codeCheck.error, codeCheck.isSuccess]);
 
-if (signupMutation.isSuccess) {
+  if (signupMutation.isSuccess) {
     return (
       <div className="mx-auto mt-16 max-w-md space-y-4 rounded-2xl border border-primary/30 bg-primary-light p-8 text-center dark:bg-gray-900">
         <h2 className="text-lg font-bold text-primary">
@@ -132,7 +132,7 @@ if (signupMutation.isSuccess) {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <LocationFields
           register={register}
-          watch={watch}
+          control={control}
           errors={errors}
           setValue={setValue}
         />
@@ -144,14 +144,18 @@ if (signupMutation.isSuccess) {
 
       <InsuranceBranchSelect
         register={register}
-        watch={watch}
+        control={control}
         errors={errors}
         setValue={setValue}
       />
 
       <PhoneField register={register} errors={errors} />
 
-      <NegotiantTypeField register={register} watch={watch} errors={errors} />
+      <NegotiantTypeField
+        register={register}
+        control={control}
+        errors={errors}
+      />
 
       {signupMutation.isError && (
         <p

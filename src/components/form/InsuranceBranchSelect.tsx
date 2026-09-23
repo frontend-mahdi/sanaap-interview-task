@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useDeferredValue } from "react";
 import {
+  type Control,
   type FieldErrors,
   type UseFormRegister,
-  type UseFormWatch,
   type UseFormSetValue,
+  useWatch,
 } from "react-hook-form";
 import { useInsuranceBranches } from "../../hooks/useInsuranceBranches";
 import type { RegistrationFormData } from "../../schemas/formSchema";
@@ -11,18 +12,18 @@ import { Field, inputClasses } from "../ui/Field";
 
 interface InsuranceBranchSelectProps {
   register: UseFormRegister<RegistrationFormData>;
-  watch: UseFormWatch<RegistrationFormData>;
+  control: Control<RegistrationFormData>;
   errors: FieldErrors<RegistrationFormData>;
   setValue: UseFormSetValue<RegistrationFormData>;
 }
 
 export function InsuranceBranchSelect({
   register,
-  watch,
+  control,
   errors,
   setValue,
 }: InsuranceBranchSelectProps) {
-  const provinceId = watch("province");
+  const provinceId = useWatch({ control, name: "province" }) ?? "";
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [open, setOpen] = useState(false);

@@ -1,4 +1,5 @@
-import { type FieldErrors, type UseFormRegister, type UseFormWatch, type UseFormSetValue } from "react-hook-form";
+import { type Control, type FieldErrors, type UseFormRegister, type UseFormSetValue } from "react-hook-form";
+import { useWatch } from "react-hook-form";
 import { useProvinces } from "../../hooks/useProvinces";
 import { useCounties } from "../../hooks/useCounties";
 import type { RegistrationFormData } from "../../schemas/formSchema";
@@ -6,13 +7,13 @@ import { Field, inputClasses } from "../ui/Field";
 
 interface LocationFieldsProps {
   register: UseFormRegister<RegistrationFormData>;
-  watch: UseFormWatch<RegistrationFormData>;
+  control: Control<RegistrationFormData>;
   errors: FieldErrors<RegistrationFormData>;
   setValue: UseFormSetValue<RegistrationFormData>;
 }
 
-export function LocationFields({ register, watch, errors, setValue }: LocationFieldsProps) {
-  const provinceId = watch("province");
+export function LocationFields({ register, control, errors, setValue }: LocationFieldsProps) {
+  const provinceId = useWatch({ control, name: "province" }) ?? "";
 
   const provincesQuery = useProvinces();
   const countiesQuery = useCounties(provinceId);

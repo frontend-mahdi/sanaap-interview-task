@@ -1,19 +1,24 @@
-import { type FieldErrors, type UseFormRegister, type UseFormWatch } from "react-hook-form";
+import {
+  type Control,
+  type FieldErrors,
+  type UseFormRegister,
+  useWatch,
+} from "react-hook-form";
 import type { RegistrationFormData } from "../../schemas/formSchema";
 import { Field, inputClasses } from "../ui/Field";
 
 interface NegotiantTypeFieldProps {
   register: UseFormRegister<RegistrationFormData>;
-  watch: UseFormWatch<RegistrationFormData>;
+  control: Control<RegistrationFormData>;
   errors: FieldErrors<RegistrationFormData>;
 }
 
 export function NegotiantTypeField({
   register,
-  watch,
+  control,
   errors,
 }: NegotiantTypeFieldProps) {
-  const agencyType = watch("agency_type");
+  const agencyType = useWatch({ control, name: "agency_type" });
 
   return (
     <div className="flex flex-col gap-3">
