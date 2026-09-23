@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useDeferredValue } from "react";
-import { type FieldErrors, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from "react-hook-form";
-import { getInsuranceBranches } from "../../services/insuranceBranchService";
-import type { InsuranceBranch } from "../../schemas/apiSchemas";
+import { useEffect, useRef, useState, useDeferredValue } from "react";
+import {
+  type FieldErrors,
+  type UseFormRegister,
+  type UseFormWatch,
+  type UseFormSetValue,
+} from "react-hook-form";
+import { useInsuranceBranches } from "../../hooks/useInsuranceBranches";
 import type { RegistrationFormData } from "../../schemas/formSchema";
 import { Field, inputClasses } from "../ui/Field";
 
@@ -22,30 +25,11 @@ export function InsuranceBranchSelect({
   const provinceId = watch("province");
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
-  const [branches, setBranches] = useState<InsuranceBranch[]>([]);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!provinceId) {
-      setBranches([]);
-      return;
-    }
-    const controller = new AbortController();
-    setLoading(true);
-    getInsuranceBranches(deferredSearch, provinceId)
-      .then((data) => {
-        setBranches(data);
-        setError(null);
-      })
-      .catch((err: Error) => {
-        if (err.name !== "AbortError") setError(err.message);
-      })
-      .finally(() => setLoading(false));
-    return () => controller.abort();
-  }, [deferredSearch, provinceId]);
+  const branchesQuery = useInsuranceBranches(deferredSearch, provinceId);
+  const branches = branchesQuery.data ?? [];
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -57,21 +41,17 @@ export function InsuranceBranchSelect({
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const selectedName = useMemo(
-    () => branches.find((b) => String(b.id) === watch("insurance_branch"))?.name,
-    [branches, watch]
-  );
-
   return (
-    <Field label="شعبه بیمه" error={error ?? errors.insurance_branch?.message}>
+    <Field
+      label="شعبه بیمه"
+      error={branchesQuery.error?.message ?? errors.insurance_branch?.message}
+    >
       <div ref={containerRef} className="relative">
         <input
           type="text"
           className={inputClasses}
           placeholder={
-            provinceId
-              ? selectedName ?? "جستجوی شعبه بیمه…"
-              : "ابتدا استان را انتخاب کنید"
+            provinceId ? "جستجوی شعبه بیمه…" : "ابتدا استان را انتخاب کنید"
           }
           disabled={!provinceId}
           value={search}
@@ -83,13 +63,13 @@ export function InsuranceBranchSelect({
         />
         {open && provinceId && (
           <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
-            {loading && (
+            {branchesQuery.isFetching && (
               <li className="px-3 py-2 text-sm text-gray-500">در حال جستجو…</li>
             )}
-            {!loading && branches.length === 0 && (
+            {!branchesQuery.isFetching && branches.length === 0 && (
               <li className="px-3 py-2 text-sm text-gray-500">موردی یافت نشد</li>
             )}
-            {!loading &&
+            {!branchesQuery.isFetching &&
               branches.map((b) => (
                 <li key={b.id}>
                   <button

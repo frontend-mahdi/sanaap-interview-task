@@ -9,3 +9,5 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const INSURANCE = "DEY";
+
+export const DEBOUNCE_MS = 600;

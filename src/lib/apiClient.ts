@@ -1,18 +1,25 @@
 export class ApiError extends Error {
   public readonly status: number;
+  public readonly code?: string;
   public readonly errorDetails: unknown;
 
-  constructor(message: string, status: number, errorDetails?: unknown) {
+  constructor(
+    message: string,
+    status: number,
+    errorDetails?: unknown,
+    code?: string
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.errorDetails = errorDetails;
+    this.code = code;
   }
 }
 
 interface RequestOptions extends Omit<RequestInit, "body"> {
-  body?: Record<string, unknown>;
-  params?: Record<string, string>;
+  body?: object;
+  params?: Record<string, string | number | undefined>;
 }
 
 export async function apiClient<T>(
@@ -24,17 +31,16 @@ export async function apiClient<T>(
   const finalUrl = new URL(url);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== "") finalUrl.searchParams.set(key, value);
+      if (value !== undefined && value !== "") {
+        finalUrl.searchParams.set(key, String(value));
+      }
     });
   }
 
   let response: Response;
   try {
     response = await fetch(finalUrl.toString(), {
-      headers: {
-        "Content-Type": "application/json",
-        ...(headers ?? {}),
-      },
+      headers: { "Content-Type": "application/json", ...(headers ?? {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
       ...rest,
     });
@@ -45,10 +51,12 @@ export async function apiClient<T>(
   const json = await response.json().catch(() => null);
 
   if (!response.ok) {
+    const errorDetails = json?.error_details;
     throw new ApiError(
-      json?.error_details?.fa_details ?? "خطای نامشخص",
+      errorDetails?.fa_details ?? json?.message ?? "خطای نامشخص از سرور",
       response.status,
-      json?.error_details
+      errorDetails,
+      errorDetails?.code
     );
   }
 

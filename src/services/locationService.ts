@@ -1,10 +1,10 @@
 import { apiClient } from "../lib/apiClient";
 import { API_ENDPOINTS } from "../config/constants";
 import {
-    provincesResponseSchema,
-    countiesResponseSchema,
-    type Province,
-    type County,
+  provincesResponseSchema,
+  countiesResponseSchema,
+  type Province,
+  type County,
 } from "../schemas/apiSchemas";
 
 export async function getProvinces(): Promise<Province[]> {

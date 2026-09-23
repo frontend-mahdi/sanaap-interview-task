@@ -1,7 +1,7 @@
 import { apiClient } from "../lib/apiClient";
 import { API_ENDPOINTS } from "../config/constants";
 import {
-  agencyCodeCheckResponseSchema,
+  agencyCodeCheckSchema,
   type AgencyCodeCheckResponse,
 } from "../schemas/apiSchemas";
 
@@ -12,5 +12,5 @@ export async function checkAgencyCode(
     method: "POST",
     body: { agent_code: agentCode },
   });
-  return agencyCodeCheckResponseSchema.parse(data);
+  return agencyCodeCheckSchema.parse(data);
 }
